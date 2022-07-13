@@ -22,7 +22,6 @@ const Homepage = () => {
   if (query === "") {
     setQuery(-1);
     setData([]);
-    setPaginate(1);
   }
 
   // to set the data into cache
@@ -48,6 +47,7 @@ const Homepage = () => {
 
         cachedData = getCache(query, paginate);
 
+        console.log(debouncedSearch);
         if (!cachedData) {
           const { data } = await axios.get(
             `https://www.breakingbadapi.com/api/characters?name=${debouncedSearch}&limit=5&offset=${
@@ -69,14 +69,14 @@ const Homepage = () => {
       setLoading(false);
     };
 
-    if (debouncedSearch.length > 2 && paginate) fetchData();
+    if (debouncedSearch.length > 0 && paginate) fetchData();
   }, [debouncedSearch, paginate]);
 
   return (
     <div className="main">
       <h1>Breaking Bad Characters</h1>
       <div className="container">
-        <Search setQuery={setQuery} />
+        <Search setQuery={setQuery} setPaginate={setPaginate} />
         {Loading ? (
           <Loader />
         ) : (
@@ -98,13 +98,13 @@ const Homepage = () => {
           <div className="button">
             <Button
               Data={Data}
-              paginate={setPaginate}
+              paginate={paginate}
               setPaginate={setPaginate}
               name="Back"
             />
             <Button
               Data={Data}
-              paginate={setPaginate}
+              paginate={paginate}
               setPaginate={setPaginate}
               name="Load More..."
             />
