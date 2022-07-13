@@ -1,92 +1,113 @@
-import React, { useState, useEffect } from "react";
-import "./styles.modules.css";
+import React, { useState, useEffect, useRef } from "react";
 
-// helper functions
-import { fetchCharacters, fetchCharactersByName, loading } from "./helpers";
+import "./styles.modules.css";
 
 // components
 import Card from "../../components/card";
 
-const Homepage = () => {
-  const [Data, setData] = useState();
-  const [Loading, setLoading] = useState(false);
-  const [inputData, setInputData] = useState();
-  const [paginate, setPaginate] = useState(0);
+import Search from "../../components/search";
+import Button from "../../components/button";
+import Loader from "../../components/loader";
+import useDebounce from "./useDebounce";
+import axios from "axios";
 
-  const customStyle = {
-    gridTemplateColumns:
-      Loading || Data?.length == 0 ? "repeat(1, 1fr)" : "repeat(3, 1fr)",
+const Homepage = () => {
+  const [Data, setData] = useState([]);
+  const [paginate, setPaginate] = useState(1);
+  const [query, setQuery] = useState(-1);
+  const [Loading, setLoading] = useState(false);
+  const queryCache = useRef({});
+  const debouncedSearch = useDebounce(query, 250);
+
+  if (query === "") {
+    setQuery(-1);
+    setData([]);
+    setPaginate(1);
+  }
+
+  // to set the data into cache
+  const setCache = (query, paginate, data) => {
+    const currData = { [paginate]: data };
+    queryCache.current[query] = { ...queryCache.current[query], ...currData };
+  };
+
+  // to fetch cached data
+  const getCache = (query, paginate) => {
+    if (queryCache.current[query] && queryCache.current[query][paginate]) {
+      return queryCache.current[query][paginate];
+    } else {
+      return false;
+    }
   };
 
   useEffect(() => {
-    const getCharacters = async () => {
-      setLoading(true);
+    const fetchData = async () => {
       try {
-        let characters;
-        if (!inputData) {
-          characters = await fetchCharacters(paginate);
+        setLoading(true);
+        let cachedData = null;
+
+        cachedData = getCache(query, paginate);
+
+        if (!cachedData) {
+          const { data } = await axios.get(
+            `https://www.breakingbadapi.com/api/characters?name=${debouncedSearch}&limit=5&offset=${
+              paginate - 1
+            }`
+          );
+          if (data.length > 0) {
+            setData(data);
+            setCache(query, paginate, data);
+          }
         } else {
-          characters = await fetchCharactersByName(inputData, paginate);
+          setData(cachedData);
         }
-        setData(characters);
+
+        setLoading(false);
       } catch (error) {
-        alert(error.message);
+        return error;
       }
       setLoading(false);
     };
-    getCharacters();
-  }, [paginate, inputData]);
+
+    if (debouncedSearch.length > 2 && paginate) fetchData();
+  }, [debouncedSearch, paginate]);
 
   return (
     <div className="main">
       <h1>Breaking Bad Characters</h1>
       <div className="container">
-        <div className="search-box">
-          <input
-            onChange={(e) => {
-              setInputData(e.target.value);
-            }}
-            type="text"
-            placeholder="Search Characters..."
-            id="text"
-          />
-        </div>
-        <div className="searched-results" style={customStyle}>
-          {Loading ? (
-            loading
-          ) : Data && Data?.length > 0 ? (
-            Data?.map((data) => (
-              <Card key={data.char_id} name={data.name} image={data.img} />
-            ))
-          ) : (
-            <h2 style={{ textAlign: "center" }}>No Data Found :(</h2>
-          )}
-        </div>
-        <div className="pagination">
-          <div className="text">
-            <h3>
-              Viewing {paginate + 1} - {paginate + 5}
-            </h3>
+        <Search setQuery={setQuery} />
+        {Loading ? (
+          <Loader />
+        ) : (
+          <div className="searched-results">
+            {Array.isArray(Data) &&
+              Data.length > 0 &&
+              Data?.map((data) => (
+                <Card key={data.char_id} name={data.name} image={data.img} />
+              ))}
           </div>
+        )}
+        <div
+          className="pagination"
+          style={{
+            display:
+              !Array.isArray(Data) || Data.length === 0 ? "none" : "flex",
+          }}
+        >
           <div className="button">
-            <button
-              onClick={() => {
-                setPaginate(paginate - 5);
-              }}
-              disabled={paginate === 0 ? true : false}
-            >
-              Back
-            </button>
-            <button
-              onClick={() => {
-                setPaginate(paginate + 5);
-              }}
-              disabled={
-                Data !== undefined && Data.length > 0 && Data?.length < 5
-              }
-            >
-              Load More
-            </button>
+            <Button
+              Data={Data}
+              paginate={setPaginate}
+              setPaginate={setPaginate}
+              name="Back"
+            />
+            <Button
+              Data={Data}
+              paginate={setPaginate}
+              setPaginate={setPaginate}
+              name="Load More..."
+            />
           </div>
         </div>
       </div>
