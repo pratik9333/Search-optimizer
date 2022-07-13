@@ -20,8 +20,8 @@ const Homepage = () => {
   const debouncedSearch = useDebounce(query, 250);
 
   if (query === "") {
-    setQuery(-1);
     setData([]);
+    setQuery(-1);
   }
 
   // to set the data into cache
@@ -47,29 +47,25 @@ const Homepage = () => {
 
         cachedData = getCache(query, paginate);
 
-        console.log(debouncedSearch);
         if (!cachedData) {
           const { data } = await axios.get(
             `https://www.breakingbadapi.com/api/characters?name=${debouncedSearch}&limit=5&offset=${
               paginate - 1
             }`
           );
-          if (data.length > 0) {
-            setData(data);
-            setCache(query, paginate, data);
-          }
+
+          setData(data);
+          if (data.length > 0) setCache(query, paginate, data);
         } else {
           setData(cachedData);
         }
-
-        setLoading(false);
       } catch (error) {
         return error;
       }
       setLoading(false);
     };
 
-    if (debouncedSearch.length > 0 && paginate) fetchData();
+    if (debouncedSearch.length > 0 && query !== "" && paginate) fetchData();
   }, [debouncedSearch, paginate]);
 
   return (
@@ -88,6 +84,7 @@ const Homepage = () => {
               ))}
           </div>
         )}
+        <div>{Data.length === 0 && !Loading && <h1>No Data Found...</h1>}</div>
         <div
           className="pagination"
           style={{
