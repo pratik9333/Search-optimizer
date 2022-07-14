@@ -16,13 +16,12 @@ const Homepage = () => {
   const [paginate, setPaginate] = useState(1);
   const [query, setQuery] = useState(-1);
   const [Loading, setLoading] = useState(false);
-  const debouncedSearch = useDebounce(query, 600);
+  const debouncedSearch = useDebounce(query, 650);
 
   const queryCache = useRef({});
   const cancelToken = useRef();
 
   if (query === "") {
-    setData([]);
     setQuery(-1);
   }
 
@@ -83,7 +82,11 @@ const Homepage = () => {
 
     // note - change length > 0 if wanted to see paginated results.
 
-    if (debouncedSearch.length > 0 || paginate) fetchData();
+    if (debouncedSearch.length > 2 && paginate) fetchData();
+    else if (debouncedSearch.length > 0 && debouncedSearch.length < 3) return;
+    else fetchData();
+
+    //
   }, [debouncedSearch, paginate]);
 
   return (
