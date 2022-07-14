@@ -4,10 +4,10 @@ import "./styles.modules.css";
 
 // components
 import Card from "../../components/card";
-
 import Search from "../../components/search";
 import Button from "../../components/button";
 import Loader from "../../components/loader";
+
 import useDebounce from "./useDebounce";
 import axios from "axios";
 
@@ -43,19 +43,25 @@ const Homepage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
+
       try {
-        setLoading(true);
         let cachedData = null;
 
         cachedData = getCache(debouncedSearch, paginate);
 
-        if (typeof cancelToken.current != typeof undefined) {
-          cancelToken.current.cancel("Operation canceled due to new request.");
-        }
-
-        cancelToken.current = axios.CancelToken.source();
-
         if (!cachedData) {
+          //
+
+          if (typeof cancelToken.current != typeof undefined) {
+            cancelToken.current.cancel(
+              "Operation canceled due to new request."
+            );
+          }
+          cancelToken.current = axios.CancelToken.source();
+
+          console.log(cancelToken.current.token);
+
           const { data } = await axios.get(
             `https://www.breakingbadapi.com/api/characters?name=${debouncedSearch}&limit=5&offset=${
               paginate - 1
@@ -65,6 +71,8 @@ const Homepage = () => {
 
           setData(data);
           if (data.length > 0) setCache(debouncedSearch, paginate, data);
+
+          //
         } else {
           setData(cachedData);
         }
