@@ -1,9 +1,12 @@
 # Search App task
 
-- An app to perform various optimzations on searching because an api can have latency.
+An app to perform various optimzations on searching because an api can have latency.
+
 - Performed debouncing which avoids calling function call again and again. It calls functions after specified amount of time after users stops writing.
 - Checked if user has atleast typed 2 characters to call the api, which again helps to not call api for 1-2 characters.
-- Cancelling previous api requests which are time consuming and calling the most current request to handle inconsistency in the UI and afcourse to prevent useless network request.
+- Cached the results on the FE for a particular query for some time, so that we don’t make an api call for the same query.
+- Cancelling previous requests which are time consuming and calling current request because... continued... (below)
+- Data can come asynchronously and we want data to render which is currently called by user rather than calling and rendering useless data.
 
 ## Setup
 
