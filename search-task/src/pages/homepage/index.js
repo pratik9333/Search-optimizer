@@ -16,8 +16,10 @@ const Homepage = () => {
   const [paginate, setPaginate] = useState(1);
   const [query, setQuery] = useState(-1);
   const [Loading, setLoading] = useState(false);
+  const debouncedSearch = useDebounce(query, 850);
+
   const queryCache = useRef({});
-  const debouncedSearch = useDebounce(query, 250);
+  const cancelToken = useRef();
 
   if (query === "") {
     setData([]);
@@ -45,27 +47,36 @@ const Homepage = () => {
         setLoading(true);
         let cachedData = null;
 
-        cachedData = getCache(query, paginate);
+        cachedData = getCache(debouncedSearch, paginate);
+
+        if (typeof cancelToken.current != typeof undefined) {
+          cancelToken.current.cancel("Operation canceled due to new request.");
+        }
+
+        cancelToken.current = axios.CancelToken.source();
 
         if (!cachedData) {
           const { data } = await axios.get(
             `https://www.breakingbadapi.com/api/characters?name=${debouncedSearch}&limit=5&offset=${
               paginate - 1
-            }`
+            }`,
+            { cancelToken: cancelToken.current.token }
           );
 
           setData(data);
-          if (data.length > 0) setCache(query, paginate, data);
+          if (data.length > 0) setCache(debouncedSearch, paginate, data);
         } else {
           setData(cachedData);
         }
       } catch (error) {
-        return error;
+        console.log(error);
       }
       setLoading(false);
     };
 
-    if (debouncedSearch.length > 0 && query !== "" && paginate) fetchData();
+    // note - change length > 0 if wanted to see paginated results.
+
+    if (debouncedSearch.length > 2 && paginate) fetchData();
   }, [debouncedSearch, paginate]);
 
   return (
