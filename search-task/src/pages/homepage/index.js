@@ -82,7 +82,7 @@ const Homepage = () => {
           setData(cachedData);
         }
       } catch (error) {
-        console.log(error);
+        console.log(error.message);
       }
       setLoading(false);
     };
@@ -90,11 +90,11 @@ const Homepage = () => {
     // note - change length > 0 if wanted to see paginated results.
 
     if (keyDown) fetchData();
-    else if (debouncedSearch.length > 2 && paginate) fetchData();
+    else if (debouncedSearch.length > 2) fetchData();
     else if (debouncedSearch.length > 0 && debouncedSearch.length < 3) return;
     else fetchData();
 
-    //
+    // eslint-disable-next-line
   }, [debouncedSearch, paginate]);
 
   return (
@@ -120,8 +120,7 @@ const Homepage = () => {
         <div
           className="pagination"
           style={{
-            display:
-              !Array.isArray(Data) || Data.length === 0 ? "none" : "flex",
+            display: Data.length === 0 && paginate === 1 ? "none" : "flex",
           }}
         >
           <div className="button">
