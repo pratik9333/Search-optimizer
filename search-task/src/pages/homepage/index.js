@@ -16,6 +16,7 @@ const Homepage = () => {
   const [paginate, setPaginate] = useState(1);
   const [query, setQuery] = useState(-1);
   const [Loading, setLoading] = useState(false);
+  const [keyDown, setkeyDown] = useState(false);
   const debouncedSearch = useDebounce(query, 650);
 
   const queryCache = useRef({});
@@ -23,6 +24,7 @@ const Homepage = () => {
 
   if (query === "") {
     setQuery(-1);
+    setkeyDown(false);
   }
 
   // to set the data into cache
@@ -40,14 +42,18 @@ const Homepage = () => {
     }
   };
 
+  // get debounce query value
+  const getDebounceValue = (value) => (value === -1 ? "" : value);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
 
       try {
         let cachedData = null;
+        let debounceValue = getDebounceValue(debouncedSearch);
 
-        cachedData = getCache(debouncedSearch, paginate);
+        cachedData = getCache(debounceValue, paginate);
 
         if (!cachedData) {
           //
@@ -59,16 +65,17 @@ const Homepage = () => {
           }
           cancelToken.current = axios.CancelToken.source();
 
+          console.log(cancelToken.current.token);
+
           const { data } = await axios.get(
-            `https://www.breakingbadapi.com/api/characters?name=${
-              debouncedSearch === -1 ? "" : debouncedSearch
-            }&limit=5&offset=${paginate - 1}`,
+            `https://www.breakingbadapi.com/api/characters?name=${debounceValue}&limit=5&offset=${
+              paginate - 1
+            }`,
             { cancelToken: cancelToken.current.token }
           );
 
           setData(data);
-          if (data.length > 0 && debouncedSearch.length > 0)
-            setCache(debouncedSearch, paginate, data);
+          if (data.length > 0) setCache(debounceValue, paginate, data);
 
           //
         } else {
@@ -82,7 +89,8 @@ const Homepage = () => {
 
     // note - change length > 0 if wanted to see paginated results.
 
-    if (debouncedSearch.length > 2 && paginate) fetchData();
+    if (keyDown) fetchData();
+    else if (debouncedSearch.length > 2 && paginate) fetchData();
     else if (debouncedSearch.length > 0 && debouncedSearch.length < 3) return;
     else fetchData();
 
@@ -93,7 +101,11 @@ const Homepage = () => {
     <div className="main">
       <h1>Breaking Bad Characters</h1>
       <div className="container">
-        <Search setQuery={setQuery} setPaginate={setPaginate} />
+        <Search
+          setQuery={setQuery}
+          setPaginate={setPaginate}
+          onKeyDown={setkeyDown}
+        />
         {Loading ? (
           <Loader />
         ) : (
