@@ -11,7 +11,7 @@ const Button = (props) => {
         );
       }}
       disabled={
-        (props.name === "Back" && props.paginate === 1) ||
+        (props.name === "Back" && props.paginate === 0) ||
         (props.name !== "Back" && props.Data && props.Data.length < 5)
       }
     >

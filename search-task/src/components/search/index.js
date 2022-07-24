@@ -7,7 +7,7 @@ const Search = (props) => {
 
   const handleText = (e) => {
     props.setQuery(e.target.value);
-    props.setPaginate(1);
+    props.setPaginate(0);
   };
 
   //

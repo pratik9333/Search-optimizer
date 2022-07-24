@@ -13,17 +13,13 @@ import axios from "axios";
 
 const Homepage = () => {
   const [Data, setData] = useState([]);
-  const [paginate, setPaginate] = useState(1);
-  const [query, setQuery] = useState(-1);
+  const [paginate, setPaginate] = useState(0);
+  const [query, setQuery] = useState("");
   const [Loading, setLoading] = useState(false);
   const debouncedSearch = useDebounce(query, 650);
 
   const queryCache = useRef({});
   const cancelToken = useRef();
-
-  if (query === "") {
-    setQuery(-1);
-  }
 
   // to set the data into cache
   const setCache = (query, paginate, data) => {
@@ -60,9 +56,7 @@ const Homepage = () => {
           cancelToken.current = axios.CancelToken.source();
 
           const { data } = await axios.get(
-            `https://www.breakingbadapi.com/api/characters?name=${
-              debouncedSearch === -1 ? "" : debouncedSearch
-            }&limit=5&offset=${paginate - 1}`,
+            `https://www.breakingbadapi.com/api/characters?name=${debouncedSearch}&limit=5&offset=${paginate}`,
             { cancelToken: cancelToken.current.token }
           );
 
@@ -82,7 +76,7 @@ const Homepage = () => {
 
     // note - change length > 0 if wanted to see paginated results.
 
-    if (debouncedSearch.length > 2 && paginate) fetchData();
+    if (debouncedSearch.length > 2) fetchData();
     else if (debouncedSearch.length > 0 && debouncedSearch.length < 3) return;
     else fetchData();
 
@@ -109,7 +103,9 @@ const Homepage = () => {
           className="pagination"
           style={{
             display:
-              !Array.isArray(Data) || Data.length === 0 ? "none" : "flex",
+              !Array.isArray(Data) || (Data.length === 0 && paginate === 1)
+                ? "none"
+                : "flex",
           }}
         >
           <div className="button">
