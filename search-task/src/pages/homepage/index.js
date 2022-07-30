@@ -61,13 +61,16 @@ const Homepage = () => {
 
           cancelToken.current = axios.CancelToken.source();
 
+          console.log(cancelToken.current.token);
+
           const { data } = await axios.get(
             `https://www.breakingbadapi.com/api/characters?name=${debouncedSearch}&limit=5&offset=${paginate}`,
             { cancelToken: cancelToken.current.token }
           );
 
           setData(data);
-          if (data.length > 0) setCache(debouncedSearch, paginate, data);
+
+          if (data.length > 0) setCache(debounceValue, paginate, data);
 
           //
         } else {
@@ -76,7 +79,7 @@ const Homepage = () => {
 
         //
       } catch (error) {
-        console.log(error);
+        console.log(error.message);
       }
       setLoading(false);
     };
@@ -86,7 +89,7 @@ const Homepage = () => {
     else if (debouncedSearch.length > 0 && debouncedSearch.length < 3) return;
     else fetchData();
 
-    //
+    // eslint-disable-next-line
   }, [debouncedSearch, paginate]);
 
   return (
