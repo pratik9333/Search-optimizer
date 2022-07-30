@@ -12,10 +12,10 @@ import useDebounce from "./useDebounce";
 import axios from "axios";
 
 const Homepage = () => {
-  const [Data, setData] = useState([]);
+  const [data, setData] = useState([]);
   const [paginate, setPaginate] = useState(0);
   const [query, setQuery] = useState("");
-  const [Loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const debouncedSearch = useDebounce(query, 650);
 
   const queryCache = useRef({});
@@ -36,23 +36,29 @@ const Homepage = () => {
     }
   };
 
+  // handle text
+  const handleText = (e) => {
+    setQuery(e.target.value);
+    setPaginate(0);
+  };
+
   useEffect(() => {
+    //
+
     const fetchData = async () => {
       setLoading(true);
 
       try {
-        let cachedData = null;
+        //
 
-        cachedData = getCache(debouncedSearch, paginate);
+        let cachedData = getCache(debouncedSearch, paginate);
 
         if (!cachedData) {
           //
 
-          if (typeof cancelToken.current != typeof undefined) {
-            cancelToken.current.cancel(
-              "Operation canceled due to new request."
-            );
-          }
+          if (typeof cancelToken.current != typeof undefined)
+            cancelToken.current.cancel();
+
           cancelToken.current = axios.CancelToken.source();
 
           const { data } = await axios.get(
@@ -61,13 +67,14 @@ const Homepage = () => {
           );
 
           setData(data);
-          if (data.length > 0 && debouncedSearch.length > 0)
-            setCache(debouncedSearch, paginate, data);
+          if (data.length > 0) setCache(debouncedSearch, paginate, data);
 
           //
         } else {
           setData(cachedData);
         }
+
+        //
       } catch (error) {
         console.log(error);
       }
@@ -75,8 +82,7 @@ const Homepage = () => {
     };
 
     // note - change length > 0 if wanted to see paginated results.
-
-    if (debouncedSearch.length > 2) fetchData();
+    if (debouncedSearch.length > 0) fetchData();
     else if (debouncedSearch.length > 0 && debouncedSearch.length < 3) return;
     else fetchData();
 
@@ -87,39 +93,30 @@ const Homepage = () => {
     <div className="main">
       <h1>Breaking Bad Characters</h1>
       <div className="container">
-        <Search setQuery={setQuery} setPaginate={setPaginate} />
-        {Loading ? (
+        <Search onChange={(e) => handleText(e)} />
+        {loading ? (
           <Loader />
         ) : (
           <div className="searched-results">
-            {Array.isArray(Data) &&
-              Data.length > 0 &&
-              Data?.map((data) => (
+            {Array.isArray(data) &&
+              data.length > 0 &&
+              data?.map((data) => (
                 <Card key={data.char_id} name={data.name} image={data.img} />
               ))}
           </div>
         )}
-        <div
-          className="pagination"
-          style={{
-            display:
-              !Array.isArray(Data) || (Data.length === 0 && paginate === 1)
-                ? "none"
-                : "flex",
-          }}
-        >
+        {!loading && data.length === 0 && <h1>No Data Found !</h1>}
+        <div className="pagination">
           <div className="button">
             <Button
-              Data={Data}
-              paginate={paginate}
-              setPaginate={setPaginate}
-              name="Back"
+              disabled={paginate === 0}
+              onClick={() => setPaginate(paginate - 5)}
+              text="Back"
             />
             <Button
-              Data={Data}
-              paginate={paginate}
-              setPaginate={setPaginate}
-              name="Load More..."
+              disabled={data.length < 5}
+              onClick={() => setPaginate(paginate + 5)}
+              text="Load More"
             />
           </div>
         </div>
