@@ -13,10 +13,14 @@ import axios from "axios";
 
 const Homepage = () => {
   const [data, setData] = useState([]);
-  const [paginate, setPaginate] = useState(0);
+
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const debouncedSearch = useDebounce(query, 650);
+  const [counter, setCounter] = useState(0);
+
+  // custom hooks
+  const paginate = useDebounce(counter, 650);
+  const debouncedValue = useDebounce(query, 650);
 
   const queryCache = useRef({});
   const cancelToken = useRef();
@@ -36,10 +40,10 @@ const Homepage = () => {
     }
   };
 
-  // handle text
+  //handle text
   const handleText = (e) => {
+    setCounter(0);
     setQuery(e.target.value);
-    setPaginate(0);
   };
 
   useEffect(() => {
@@ -51,7 +55,7 @@ const Homepage = () => {
       try {
         //
 
-        let cachedData = getCache(debouncedSearch, paginate);
+        let cachedData = getCache(debouncedValue, paginate);
 
         if (!cachedData) {
           //
@@ -61,16 +65,14 @@ const Homepage = () => {
 
           cancelToken.current = axios.CancelToken.source();
 
-          console.log(cancelToken.current.token);
-
           const { data } = await axios.get(
-            `https://www.breakingbadapi.com/api/characters?name=${debouncedSearch}&limit=5&offset=${paginate}`,
+            `https://www.breakingbadapi.com/api/characters?name=${debouncedValue}&limit=5&offset=${paginate}`,
             { cancelToken: cancelToken.current.token }
           );
 
           setData(data);
 
-          if (data.length > 0) setCache(debounceValue, paginate, data);
+          if (data.length > 0) setCache(debouncedValue, paginate, data);
 
           //
         } else {
@@ -79,24 +81,24 @@ const Homepage = () => {
 
         //
       } catch (error) {
-        console.log(error.message);
+        //console.log(error.message);
       }
       setLoading(false);
     };
 
     // note - change length > 0 if wanted to see paginated results.
-    if (debouncedSearch.length > 0) fetchData();
-    else if (debouncedSearch.length > 0 && debouncedSearch.length < 3) return;
+    if (debouncedValue.length > 2) fetchData();
+    else if (debouncedValue.length > 0 && debouncedValue.length < 3) return;
     else fetchData();
 
     // eslint-disable-next-line
-  }, [debouncedSearch, paginate]);
+  }, [debouncedValue, paginate]);
 
   return (
     <div className="main">
       <h1>Breaking Bad Characters</h1>
       <div className="container">
-        <Search onChange={(e) => handleText(e)} />
+        <Search onChange={handleText} />
         {loading ? (
           <Loader />
         ) : (
@@ -112,13 +114,13 @@ const Homepage = () => {
         <div className="pagination">
           <div className="button">
             <Button
-              disabled={paginate === 0}
-              onClick={() => setPaginate(paginate - 5)}
+              onClick={() => setCounter(counter - 5)}
+              disabled={counter === 0}
               text="Back"
             />
             <Button
+              onClick={() => setCounter(counter + 5)}
               disabled={data.length < 5}
-              onClick={() => setPaginate(paginate + 5)}
               text="Load More"
             />
           </div>
