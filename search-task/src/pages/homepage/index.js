@@ -16,10 +16,9 @@ const Homepage = () => {
 
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [counter, setCounter] = useState(0);
+  const [paginate, setPaginate] = useState(0);
 
   // custom hooks
-  const paginate = useDebounce(counter, 650);
   const debouncedValue = useDebounce(query, 650);
 
   const queryCache = useRef({});
@@ -42,7 +41,7 @@ const Homepage = () => {
 
   //handle text
   const handleText = (e) => {
-    setCounter(0);
+    setPaginate(0);
     setQuery(e.target.value);
   };
 
@@ -114,14 +113,14 @@ const Homepage = () => {
         <div className="pagination">
           <div className="button">
             <Button
-              onClick={() => setCounter(counter - 5)}
-              disabled={counter === 0}
+              onClick={() => setPaginate(paginate - 5)}
+              disabled={paginate === 0 || loading}
               text="Back"
             />
             <Button
-              onClick={() => setCounter(counter + 5)}
-              disabled={data.length < 5}
-              text="Load More"
+              onClick={() => setPaginate(paginate + 5)}
+              disabled={data.length < 5 || loading}
+              text="Load-More"
             />
           </div>
         </div>

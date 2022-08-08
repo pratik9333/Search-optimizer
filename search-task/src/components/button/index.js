@@ -4,7 +4,7 @@ import "./styles.modules.css";
 
 const Button = ({ text, disabled, onClick }) => {
   return (
-    <button onClick={onClick} disabled={disabled}>
+    <button className="button" onClick={onClick} disabled={disabled}>
       {text}
     </button>
   );
