@@ -36,7 +36,6 @@ const Homepage = () => {
 
   // to fetch cached data
   const getCache = (query, paginate) => {
-    console.log(queryCache)
     if (queryCache.current[query] && queryCache.current[query][paginate]) {
       return queryCache.current[query][paginate];
     } else {
@@ -110,7 +109,7 @@ const Homepage = () => {
             {Array.isArray(data) &&
               data.length > 0 &&
               data?.map((data) => (
-                <Card key={data.char_id} name={data.name} image={data.img} rdata={data}/>
+                <Card character={data}/>
               ))}
           </div>
         )}

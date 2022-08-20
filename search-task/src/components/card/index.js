@@ -2,28 +2,28 @@ import React from "react";
 
 import "./styles.modules.css";
 
-const Card = ({ name, image, rdata }) => {
+const Card = ({ character }) => {
   return (
     <div>
     <div className='card'>
     <div className='card-inner'>
       <div className='card-front'>
-        <img src={image} alt='' />
+        <img src={character.img} alt='' />
       </div>
       <div className='card-back'>
-        <h1>{name}</h1>
+        <h1>{character.name}</h1>
         <ul>
           <li>
-            <strong>Actor Name:</strong> {rdata.portrayed}
+            <strong>Actor Name:</strong> {character.portrayed}
           </li>
           <li>
-            <strong>Nickname:</strong> {rdata.nickname}
+            <strong>Nickname:</strong> {character.nickname}
           </li>
           <li>
-            <strong>Birthday:</strong> {rdata.birthday}
+            <strong>Birthday:</strong> {character.birthday}
           </li>
           <li>
-            <strong>Status:</strong> {rdata.status}
+            <strong>Status:</strong> {character.status}
           </li>
         </ul>
       </div>
