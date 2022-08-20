@@ -8,8 +8,11 @@ import Search from "../../components/search";
 import Button from "../../components/button";
 import Loader from "../../components/loader";
 
+
+
 import useDebounce from "./useDebounce";
 import axios from "axios";
+
 
 const Homepage = () => {
   const [data, setData] = useState([]);
@@ -28,6 +31,7 @@ const Homepage = () => {
   const setCache = (query, paginate, data) => {
     const currData = { [paginate]: data };
     queryCache.current[query] = { ...queryCache.current[query], ...currData };
+  
   };
 
   // to fetch cached data
@@ -105,7 +109,7 @@ const Homepage = () => {
             {Array.isArray(data) &&
               data.length > 0 &&
               data?.map((data) => (
-                <Card key={data.char_id} name={data.name} image={data.img} />
+                <Card character={data}/>
               ))}
           </div>
         )}
